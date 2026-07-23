@@ -107,30 +107,30 @@ export default function Home() {
 
         <div className="flex items-center gap-2">
           {!settings.apiKey && settings.provider !== 'nvidia' && (
-            <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-400/10 border border-amber-400/20 rounded-full px-3 py-1">
-              <Sparkles className="w-3 h-3" />
+            <div className="flex items-center gap-2 text-[10px] text-[var(--background)] bg-[var(--foreground)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest">
+              <Sparkles className="w-3 h-3 text-[var(--primary)]" />
               Add API key to start
             </div>
           )}
           {settings.provider === 'nvidia' && (
-            <div className="flex items-center gap-1.5 text-xs text-green-400 bg-green-400/10 border border-green-400/20 rounded-full px-3 py-1">
-              <Sparkles className="w-3 h-3" />
+            <div className="flex items-center gap-2 text-[10px] text-black bg-[var(--primary)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(209,254,23,1)]">
+              <Sparkles className="w-3 h-3 text-black" />
               DeepSeek V4 Flash · Free
             </div>
           )}
           <button
             onClick={() => setShowHistory(true)}
-            className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors px-3 py-1.5 rounded-lg hover:bg-[hsl(var(--secondary))]"
+            className="flex items-center gap-2 text-[10px] text-[var(--foreground)] border border-[var(--foreground)] hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors px-3 py-1.5 rounded-none font-bold uppercase tracking-widest"
           >
-            <History className="w-3.5 h-3.5" />
+            <History className="w-3 h-3" />
             History
           </button>
           <ThemeToggle />
           <button
             onClick={() => setShowSettings(true)}
-            className="flex items-center gap-1.5 text-xs text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] transition-colors px-3 py-1.5 rounded-lg hover:bg-[hsl(var(--secondary))]"
+            className="flex items-center gap-2 text-[10px] text-[var(--foreground)] border border-[var(--foreground)] hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors px-3 py-1.5 rounded-none font-bold uppercase tracking-widest"
           >
-            <Settings className="w-3.5 h-3.5" />
+            <Settings className="w-3 h-3" />
             Settings
           </button>
         </div>
