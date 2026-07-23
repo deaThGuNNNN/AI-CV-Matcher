@@ -29,7 +29,7 @@ export interface ScoreDimension {
 
 export interface AppSettings {
   apiKey: string;
-  provider: 'gemini' | 'openai' | 'anthropic' | 'nvidia';
+  provider: 'gemini' | 'openai' | 'anthropic' | 'bedrock';
   defaultLanguage: 'auto' | 'fr' | 'en';
 }
 
@@ -47,7 +47,7 @@ export const defaultProfile: Profile = {
 
 export const defaultSettings: AppSettings = {
   apiKey: '',
-  provider: 'nvidia',
+  provider: 'bedrock',
   defaultLanguage: 'auto',
 };
 

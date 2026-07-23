@@ -12,12 +12,12 @@ interface SettingsDialogProps {
 
 const PROVIDERS = [
   {
-    id: 'nvidia' as const,
-    name: 'NVIDIA NIM',
-    model: 'DeepSeek V4 Flash',
-    hint: '🆓 Free endpoint',
-    url: 'https://build.nvidia.com/deepseek-ai/deepseek-v4-flash',
-    color: 'text-green-400',
+    id: 'bedrock' as const,
+    name: 'Amazon Bedrock',
+    model: 'Claude 3.5 Sonnet',
+    hint: '🆓 Default quota active',
+    url: 'https://aws.amazon.com/bedrock/',
+    color: 'text-[var(--primary)]',
     free: true,
   },
   {
@@ -90,34 +90,33 @@ export function SettingsDialog({ settings, onSave, onClose }: SettingsDialogProp
               <label className="text-xs font-semibold text-[var(--foreground)]">AI Provider</label>
             </div>
             <div className="space-y-2">
-              {/* NVIDIA — free, highlighted */}
               {PROVIDERS.filter((p) => p.free).map((provider) => (
                 <button
                   key={provider.id}
                   onClick={() => setForm((f) => ({ ...f, provider: provider.id }))}
-                  className={`w-full p-3 rounded-xl border text-left transition-all relative overflow-hidden ${
+                  className={`w-full p-3 rounded-none border text-left transition-all relative overflow-hidden ${
                     form.provider === provider.id
-                      ? 'border-green-500/60 bg-green-500/10'
-                      : 'border-green-500/30 bg-green-500/5 hover:border-green-500/50 hover:bg-green-500/10'
+                      ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]'
+                      : 'border-[var(--border)] bg-[var(--secondary)] hover:border-[var(--foreground)]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <p className="text-[11px] font-bold text-green-400">{provider.name}</p>
-                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-green-500/20 text-green-400 border border-green-400/30">
-                          FREE
+                        <p className={`text-[11px] font-bold uppercase tracking-widest ${form.provider === provider.id ? 'text-[var(--primary)]' : 'text-[var(--foreground)]'}`}>{provider.name}</p>
+                        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-none bg-[var(--primary)] text-black border border-black uppercase">
+                          DEFAULT
                         </span>
                       </div>
-                      <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">{provider.model}</p>
+                      <p className={`text-[10px] mt-0.5 ${form.provider === provider.id ? 'text-[var(--background)]' : 'text-[var(--muted-foreground)]'}`}>{provider.model}</p>
                     </div>
-                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                      form.provider === provider.id ? 'border-green-400 bg-green-400' : 'border-[var(--border)]'
+                    <div className={`w-4 h-4 rounded-none border-2 flex items-center justify-center ${
+                      form.provider === provider.id ? 'border-[var(--primary)] bg-[var(--primary)]' : 'border-[var(--border)]'
                     }`}>
-                      {form.provider === provider.id && <div className="w-2 h-2 rounded-full bg-white" />}
+                      {form.provider === provider.id && <div className="w-2 h-2 rounded-none bg-black" />}
                     </div>
                   </div>
-                  <p className="text-[9px] text-green-500/70 mt-1">DeepSeek V4 Flash · 1M token context · NVIDIA infrastructure</p>
+                  <p className={`text-[9px] mt-1 uppercase tracking-wider ${form.provider === provider.id ? 'text-[var(--background)] opacity-70' : 'text-[var(--muted-foreground)]'}`}>Powered by AWS · No key required</p>
                 </button>
               ))}
 
@@ -127,15 +126,14 @@ export function SettingsDialog({ settings, onSave, onClose }: SettingsDialogProp
                   <button
                     key={provider.id}
                     onClick={() => setForm((f) => ({ ...f, provider: provider.id }))}
-                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                    className={`p-2.5 rounded-none border text-left transition-all ${
                       form.provider === provider.id
-                        ? 'border-blue-500/40 bg-blue-500/10'
-                        : 'border-[var(--border)] bg-[var(--secondary)] hover:border-blue-500/20'
+                        ? 'border-[var(--foreground)] bg-[var(--foreground)] text-[var(--background)]'
+                        : 'border-[var(--border)] bg-[var(--secondary)] hover:border-[var(--foreground)]'
                     }`}
                   >
-                    <p className={`text-[11px] font-semibold ${provider.color}`}>{provider.name}</p>
-                    <p className="text-[10px] text-[var(--muted-foreground)] mt-0.5">{provider.model}</p>
-                    <p className="text-[9px] text-[var(--muted-foreground)] mt-1 opacity-70">{provider.hint}</p>
+                    <p className={`text-[10px] font-bold uppercase tracking-wider ${form.provider === provider.id ? 'text-[var(--background)]' : 'text-[var(--foreground)]'}`}>{provider.name}</p>
+                    <p className={`text-[9px] mt-0.5 ${form.provider === provider.id ? 'text-[var(--background)] opacity-70' : 'text-[var(--muted-foreground)]'}`}>{provider.model}</p>
                   </button>
                 ))}
               </div>
@@ -160,13 +158,13 @@ export function SettingsDialog({ settings, onSave, onClose }: SettingsDialogProp
               </a>
             </div>
 
-            {/* NVIDIA: key pre-configured via .env.local */}
-            {form.provider === 'nvidia' && !form.apiKey && (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-green-500/10 border border-green-500/30">
-                <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+            {/* Pre-configured Key Alert */}
+            {!form.apiKey && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-none border-l-4 border-[var(--primary)] bg-[var(--primary)]/10">
+                <div className="w-2 h-2 rounded-full bg-[var(--primary)] animate-pulse" />
                 <div>
-                  <p className="text-[11px] font-semibold text-green-400">API key pre-configured ✓</p>
-                  <p className="text-[10px] text-green-500/70">Loaded from .env.local — ready to use</p>
+                  <p className="text-[10px] font-bold text-[var(--foreground)] uppercase tracking-wider">Default Quota Active</p>
+                  <p className="text-[9px] text-[var(--muted-foreground)]">No key required. Leave blank to use our default API quota.</p>
                 </div>
               </div>
             )}
@@ -174,14 +172,10 @@ export function SettingsDialog({ settings, onSave, onClose }: SettingsDialogProp
             <div className="relative">
               <input
                 type={showKey ? 'text' : 'password'}
-                placeholder={
-                  form.provider === 'nvidia' && !form.apiKey
-                    ? 'Leave blank to use pre-configured key…'
-                    : `Enter your ${selectedProvider.name} API key...`
-                }
+                placeholder="Optional: Enter your own API key..."
                 value={form.apiKey}
                 onChange={(e) => setForm((f) => ({ ...f, apiKey: e.target.value }))}
-                className="w-full px-3 pr-10 py-2.5 text-xs rounded-xl bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-2 focus:ring-[var(--ring)] transition-all font-mono"
+                className="w-full px-3 pr-10 py-2.5 text-xs rounded-none bg-[var(--input)] border border-[var(--border)] text-[var(--foreground)] placeholder-[var(--muted-foreground)] focus:outline-none focus:ring-1 focus:ring-[var(--foreground)] transition-all font-mono uppercase tracking-wider"
               />
               <button
                 onClick={() => setShowKey((v) => !v)}
@@ -227,13 +221,13 @@ export function SettingsDialog({ settings, onSave, onClose }: SettingsDialogProp
         <div className="px-5 py-4 border-t border-[var(--border)] flex gap-2 justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs rounded-xl border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:bg-[var(--secondary)] transition-all"
+            className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none border border-[var(--border)] text-[var(--muted-foreground)] hover:text-[var(--foreground)] hover:border-[var(--foreground)] transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 text-xs rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-medium transition-all"
+            className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-none border border-[var(--foreground)] bg-[var(--foreground)] hover:bg-[var(--background)] hover:text-[var(--foreground)] text-[var(--background)] transition-all"
           >
             Save Settings
           </button>

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { buildMatchPrompt } from '@/lib/prompts';
 import type { AppSettings } from '@/lib/storage';
 
@@ -29,50 +30,46 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
-// NVIDIA NIM — OpenAI-compatible endpoint (free tier)
-// Uses DeepSeek V4 Flash with thinking/reasoning enabled
-async function callNvidiaDeepSeek(prompt: string, apiKey: string): Promise<string> {
-  // Fall back to env var if no key passed from UI
-  const key = apiKey || process.env.NVIDIA_API_KEY || '';
-  if (!key) throw new Error('No NVIDIA API key found. Add it in Settings or set NVIDIA_API_KEY in .env.local');
-
-  const response = await fetch('https://integrate.api.nvidia.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: 'deepseek-ai/deepseek-v4-flash',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 1,
-      top_p: 0.95,
-      max_tokens: 16384,
-      stream: false,
-      chat_template_kwargs: {
-        thinking: true,
-        reasoning_effort: 'high',
-      },
-    }),
-  });
-
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || `NVIDIA API error: ${response.status}`);
+// Amazon Bedrock (Claude 3.5 Sonnet)
+async function callAmazonBedrock(prompt: string, apiKey: string): Promise<string> {
+  // Optional custom key in format ACCESS_KEY:SECRET_KEY
+  let credentials;
+  if (apiKey && apiKey.includes(':')) {
+    const [accessKeyId, secretAccessKey] = apiKey.split(':');
+    credentials = { accessKeyId, secretAccessKey };
   }
 
-  const data = await response.json();
-  const message = data.choices?.[0]?.message;
+  const client = new BedrockRuntimeClient({
+    region: process.env.AWS_REGION || 'us-east-1',
+    ...(credentials && { credentials }),
+  });
 
-  // Extract reasoning content if present (DeepSeek thinking mode)
-  const reasoning: string =
-    message?.reasoning ?? message?.reasoning_content ?? '';
+  const payload = {
+    anthropic_version: "bedrock-2023-05-31",
+    max_tokens: 8192,
+    messages: [
+      {
+        role: "user",
+        content: [{ type: "text", text: prompt }],
+      },
+    ],
+  };
 
-  const content: string = message?.content ?? '';
+  const command = new InvokeModelCommand({
+    modelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    contentType: "application/json",
+    accept: "application/json",
+    body: JSON.stringify(payload),
+  });
 
-  // Return just the content — reasoning is internal chain-of-thought
-  // but if content is empty, fall back to reasoning
-  return content || reasoning;
+  try {
+    const response = await client.send(command);
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
+    return responseBody.content?.[0]?.text || '';
+  } catch (error) {
+    const err = error as Error;
+    throw new Error(`Amazon Bedrock API error: ${err.message}`);
+  }
 }
 
 async function callOpenAI(prompt: string, apiKey: string): Promise<string> {
@@ -137,25 +134,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'CV and job description are required' }, { status: 400 });
     }
 
-    if (!settings?.apiKey) {
-      // For NVIDIA, the key can come from the env var — skip the check
-      const isNvidiaWithEnvKey =
-        settings?.provider === 'nvidia' && !!process.env.NVIDIA_API_KEY;
-      if (!isNvidiaWithEnvKey) {
-        return NextResponse.json(
-          { error: 'API key is required. Please add one in Settings.' },
-          { status: 400 }
-        );
-      }
-    }
+    // API keys are now completely optional from the client.
+    // If none is provided, the backend falls back to .env.local credentials.
 
     const prompt = buildMatchPrompt(cv, coverLetter || '', jobDescription);
 
     let rawText = '';
 
     switch (settings.provider) {
-      case 'nvidia':
-        rawText = await callNvidiaDeepSeek(prompt, settings.apiKey);
+      case 'bedrock':
+        rawText = await callAmazonBedrock(prompt, settings.apiKey);
         break;
       case 'openai':
         rawText = await callOpenAI(prompt, settings.apiKey);

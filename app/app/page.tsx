@@ -47,11 +47,7 @@ export default function Home() {
         setStep(1);
         return;
       }
-      if (!settings.apiKey.trim() && settings.provider !== 'nvidia') {
-        setError('Please add your API key in Settings.');
-        setShowSettings(true);
-        return;
-      }
+      // API key check removed because a default key is provided.
 
       setIsAnalyzing(true);
       setError(null);
@@ -106,16 +102,10 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-2">
-          {!settings.apiKey && settings.provider !== 'nvidia' && (
-            <div className="flex items-center gap-2 text-[10px] text-[var(--background)] bg-[var(--foreground)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest">
+          {settings.provider === 'bedrock' && (
+            <div className="flex items-center gap-2 text-[10px] text-[var(--background)] bg-[var(--foreground)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(209,254,23,1)]">
               <Sparkles className="w-3 h-3 text-[var(--primary)]" />
-              Add API key to start
-            </div>
-          )}
-          {settings.provider === 'nvidia' && (
-            <div className="flex items-center gap-2 text-[10px] text-black bg-[var(--primary)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(209,254,23,1)]">
-              <Sparkles className="w-3 h-3 text-black" />
-              DeepSeek V4 Flash · Free
+              Amazon Bedrock
             </div>
           )}
           <button
