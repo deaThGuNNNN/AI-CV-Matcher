@@ -130,7 +130,7 @@ export function TailoredOutput({ result }: TailoredOutputProps) {
       {result.tailoredCv && (
         <PdfDownloadButton
           content={result.tailoredCv}
-          filename="Tailored_CV"
+          filename={`CV_${result.jobTitle.replace(/[^a-zA-Z0-9-]/g, '_')}`}
           label={cvLabel}
           accent="blue"
         />
@@ -139,7 +139,7 @@ export function TailoredOutput({ result }: TailoredOutputProps) {
       {result.tailoredCoverLetter && (
         <PdfDownloadButton
           content={result.tailoredCoverLetter}
-          filename="Tailored_Cover_Letter"
+          filename={`CoverLetter_${result.jobTitle.replace(/[^a-zA-Z0-9-]/g, '_')}`}
           label={clLabel}
           accent="purple"
         />
