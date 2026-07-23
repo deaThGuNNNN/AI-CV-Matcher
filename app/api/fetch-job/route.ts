@@ -8,8 +8,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    // Use Jina Reader API to extract clean Markdown and bypass blocks (e.g., LinkedIn, Indeed)
-    const fetchUrl = `https://r.jina.ai/${url}`;
+    // Use Jina Reader API to extract clean Markdown and bypass blocks (e.g., Indeed)
+    let fetchUrl = `https://r.jina.ai/${url}`;
+
+    // Special handling for LinkedIn jobs to avoid Jina 403 blocks
+    if (url.includes('linkedin.com')) {
+      const match = url.match(/(?:currentJobId=|view\/|jobs\/)([0-9]+)/);
+      if (match && match[1]) {
+        fetchUrl = `https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/${match[1]}`;
+      }
+    }
 
     const response = await fetch(fetchUrl, {
       headers: {
