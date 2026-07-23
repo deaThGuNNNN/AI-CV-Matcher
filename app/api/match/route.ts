@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import { buildMatchPrompt } from '@/lib/prompts';
 import type { AppSettings } from '@/lib/storage';
 
@@ -30,46 +29,33 @@ async function callGemini(prompt: string, apiKey: string): Promise<string> {
   return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 }
 
-// Amazon Bedrock (Claude 3.5 Sonnet)
+// Amazon Bedrock via Mantle (OpenAI-compatible endpoint)
 async function callAmazonBedrock(prompt: string, apiKey: string): Promise<string> {
-  // Optional custom key in format ACCESS_KEY:SECRET_KEY
-  let credentials;
-  if (apiKey && apiKey.includes(':')) {
-    const [accessKeyId, secretAccessKey] = apiKey.split(':');
-    credentials = { accessKeyId, secretAccessKey };
-  }
+  const key = apiKey || process.env.MANTLE_API_KEY || '';
+  if (!key) throw new Error('No Bedrock Mantle API key found.');
 
-  const client = new BedrockRuntimeClient({
-    region: process.env.AWS_REGION || 'us-east-1',
-    ...(credentials && { credentials }),
+  const response = await fetch('https://bedrock-mantle.us-east-1.api.aws/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify({
+      // We will use Haiku since we agreed it's best for providing free usage!
+      model: 'anthropic.claude-3-5-haiku-20241022-v1:0', 
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7,
+      max_tokens: 8192,
+    }),
   });
 
-  const payload = {
-    anthropic_version: "bedrock-2023-05-31",
-    max_tokens: 8192,
-    messages: [
-      {
-        role: "user",
-        content: [{ type: "text", text: prompt }],
-      },
-    ],
-  };
-
-  const command = new InvokeModelCommand({
-    modelId: "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    contentType: "application/json",
-    accept: "application/json",
-    body: JSON.stringify(payload),
-  });
-
-  try {
-    const response = await client.send(command);
-    const responseBody = JSON.parse(new TextDecoder().decode(response.body));
-    return responseBody.content?.[0]?.text || '';
-  } catch (error) {
-    const err = error as Error;
-    throw new Error(`Amazon Bedrock API error: ${err.message}`);
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Amazon Bedrock Mantle API error: ${response.status}`);
   }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content || '';
 }
 
 async function callOpenAI(prompt: string, apiKey: string): Promise<string> {
