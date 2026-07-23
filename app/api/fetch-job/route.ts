@@ -19,6 +19,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Special handling using our dedicated AWS Scraping Microservice (for Glassdoor, etc.)
+    if (process.env.SCRAPER_SERVICE_URL && !url.includes('linkedin.com') && !url.includes('indeed.com')) {
+      console.log('Using dedicated AWS scraping service...');
+      const response = await fetch(`${process.env.SCRAPER_SERVICE_URL}/scrape`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return NextResponse.json({ jobDescription: data.html });
+      }
+    }
+
     // Special handling for Indeed - bypass Cloudflare by using their mobile embedded view endpoint
     if (url.includes('indeed.com')) {
       const match = url.match(/(?:vjk=|jk=)([a-f0-9]+)/i);
