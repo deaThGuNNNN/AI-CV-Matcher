@@ -8,8 +8,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    // Use Jina Reader API to extract clean Markdown and bypass blocks (e.g., LinkedIn)
-    const fetchUrl = url.includes('linkedin.com') ? `https://r.jina.ai/${url}` : url;
+    // Use Jina Reader API to extract clean Markdown and bypass blocks (e.g., LinkedIn, Indeed)
+    const fetchUrl = `https://r.jina.ai/${url}`;
 
     const response = await fetch(fetchUrl, {
       headers: {
