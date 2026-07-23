@@ -53,7 +53,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const html = await response.text();
+    let html = await response.text();
+
+    // Indeed hydration data extraction
+    const initialDataMatch = html.match(/_initialData=(\{.*?\});/);
+    if (initialDataMatch) {
+      try {
+        const data = JSON.parse(initialDataMatch[1]);
+        if (data?.jobInfoWrapperModel?.jobInfoModel?.sanitizedJobDescription) {
+          html = data.jobInfoWrapperModel.jobInfoModel.sanitizedJobDescription;
+        } else if (data?.jobInfoWrapperModel?.jobInfoModel?.jobDescriptionText) {
+          html = data.jobInfoWrapperModel.jobInfoModel.jobDescriptionText;
+        }
+      } catch (e) {
+        // Ignore JSON parse errors and fall back to raw html
+      }
+    }
 
     // Strip HTML tags and extract meaningful text
     const text = html
