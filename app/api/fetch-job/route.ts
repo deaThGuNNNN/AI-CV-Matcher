@@ -8,7 +8,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
     }
 
-    const response = await fetch(url, {
+    // Use Jina Reader API to extract clean Markdown and bypass blocks (e.g., LinkedIn)
+    const fetchUrl = url.includes('linkedin.com') ? `https://r.jina.ai/${url}` : url;
+
+    const response = await fetch(fetchUrl, {
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -48,7 +51,11 @@ export async function POST(request: NextRequest) {
       .replace(/\s{2,}/g, '\n')
       .trim();
 
-    if (text.length < 100) {
+    if (
+      text.length < 100 ||
+      text.includes('Target URL returned error 404') ||
+      text.includes('لم يتم العثور على الصفحة') // Sometimes LinkedIn returns a 404 Arabic page for jina for some reason
+    ) {
       return NextResponse.json(
         { error: 'Could not extract meaningful content from this URL. Try pasting the description directly.' },
         { status: 400 }
