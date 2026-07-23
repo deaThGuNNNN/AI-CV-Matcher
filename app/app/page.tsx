@@ -105,7 +105,7 @@ export default function Home() {
           {settings.provider === 'bedrock' && (
             <div className="flex items-center gap-2 text-[10px] text-[var(--background)] bg-[var(--foreground)] border border-[var(--foreground)] rounded-none px-3 py-1.5 font-bold uppercase tracking-widest shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(209,254,23,1)]">
               <Sparkles className="w-3 h-3 text-[var(--primary)]" />
-              Amazon Bedrock · Haiku
+              Amazon Bedrock
             </div>
           )}
           <button

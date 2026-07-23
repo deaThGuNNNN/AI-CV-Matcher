@@ -41,8 +41,8 @@ async function callAmazonBedrock(prompt: string, apiKey: string): Promise<string
       Authorization: `Bearer ${key}`,
     },
     body: JSON.stringify({
-      // We will use Haiku since we agreed it's best for providing free usage!
-      model: 'anthropic.claude-3-5-haiku-20241022-v1:0', 
+      // Swapped to deepseek.v3.1 temporarily while waiting for AWS Anthropic approval
+      model: 'deepseek.v3.1', 
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
       max_tokens: 8192,

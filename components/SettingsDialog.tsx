@@ -14,7 +14,7 @@ const PROVIDERS = [
   {
     id: 'bedrock' as const,
     name: 'Amazon Bedrock',
-    model: 'Claude Haiku 4.5',
+    model: 'Claude 3.5 Sonnet',
     hint: '🆓 Default quota active',
     url: 'https://aws.amazon.com/bedrock/',
     color: 'text-[var(--primary)]',
