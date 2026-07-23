@@ -19,6 +19,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Special handling for Indeed - requires a Scraping proxy (like ScraperAPI) because of strict Cloudflare WAF
+    if (url.includes('indeed.com') && process.env.SCRAPER_API_KEY) {
+      fetchUrl = `http://api.scraperapi.com?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url)}`;
+    }
+
     const response = await fetch(fetchUrl, {
       headers: {
         'User-Agent':
