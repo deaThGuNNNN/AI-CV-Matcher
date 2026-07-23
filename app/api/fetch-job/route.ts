@@ -30,6 +30,12 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
+      if (response.status === 403 || response.status === 401) {
+        return NextResponse.json(
+          { error: 'This job board actively blocks automated fetching (Cloudflare/bot protection).' },
+          { status: 400 }
+        );
+      }
       return NextResponse.json(
         { error: `Could not fetch URL: HTTP ${response.status}` },
         { status: 400 }
