@@ -19,9 +19,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Special handling for Indeed - requires a Scraping proxy (like ScraperAPI) because of strict Cloudflare WAF
-    if (url.includes('indeed.com') && process.env.SCRAPER_API_KEY) {
-      fetchUrl = `http://api.scraperapi.com?api_key=${process.env.SCRAPER_API_KEY}&url=${encodeURIComponent(url)}`;
+    // Special handling for Indeed - bypass Cloudflare by using their mobile embedded view endpoint
+    if (url.includes('indeed.com')) {
+      const match = url.match(/(?:vjk=|jk=)([a-f0-9]+)/i);
+      if (match && match[1]) {
+        // Extract the domain (e.g. fr.indeed.com or www.indeed.com)
+        const domainMatch = url.match(/https?:\/\/([a-z0-9.-]+\.indeed\.com)/i);
+        const domain = domainMatch ? domainMatch[1] : 'www.indeed.com';
+        fetchUrl = `https://${domain}/m/basecamp/viewjob?viewtype=embedded&jk=${match[1]}`;
+      }
     }
 
     const response = await fetch(fetchUrl, {
